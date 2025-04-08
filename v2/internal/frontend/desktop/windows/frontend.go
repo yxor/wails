@@ -34,7 +34,7 @@ import (
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
-const startURL = "http://wails.localhost/"
+const startURL = "http://localhost:5177/"
 
 var secondInstanceBuffer = make(chan options.SecondInstanceData, 1)
 
