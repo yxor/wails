@@ -4,6 +4,7 @@
 
 <p align="center">
   Build desktop applications using Go & Web Technologies.
+    This is a fork of the original wails project with a patched webview that allows webrtc.
   <br/>
   <br/>
   <a href="https://github.com/wailsapp/wails/blob/master/LICENSE">
