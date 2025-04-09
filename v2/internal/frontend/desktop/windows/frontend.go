@@ -99,8 +99,15 @@ func NewFrontend(ctx context.Context, appoptions *options.App, myLogger *logger.
 		result.startURL.Host = net.JoinHostPort(result.startURL.Host, port)
 	}
 
+	overrideStartUrl, err := url.Parse(appoptions.StartURL)
+
+	if err != nil {
+		result.logger.Error("failed overriding starturl: %v", err)
+	} else {
+		result.startURL = overrideStartUrl
+	}
+
 	var bindings string
-	var err error
 	if _obfuscated, _ := ctx.Value("obfuscated").(bool); !_obfuscated {
 		bindings, err = appBindings.ToJSON()
 		if err != nil {
@@ -479,6 +486,19 @@ func (f *Frontend) setupChromium() {
 		}
 	}
 
+	if f.frontendOptions.AllowMediaDevicePermissions {
+		// webview flags
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--use-fake-ui-for-media-stream")
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, fmt.Sprintf("--unsafely-treat-insecure-origin-as-secure=%v", f.startURL))
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--no-first-run")
+		chromium.AdditionalBrowserArgs = append(chromium.AdditionalBrowserArgs, "--disable-popup-blocking")
+
+		// permissions override
+		chromium.SetPermission(edge.CoreWebView2PermissionKindCamera, edge.CoreWebView2PermissionStateAllow)
+		chromium.SetPermission(edge.CoreWebView2PermissionKindMicrophone, edge.CoreWebView2PermissionStateAllow)
+		chromium.SetPermission(edge.CoreWebView2PermissionKindUnknownPermission, edge.CoreWebView2PermissionStateAllow)
+	}
+
 	chromium.MessageCallback = f.processMessage
 	chromium.MessageWithAdditionalObjectsCallback = f.processMessageWithAdditionalObjects
 	chromium.WebResourceRequestedCallback = f.processRequest
@@ -589,6 +609,7 @@ func (f *Frontend) setupChromium() {
 	f.WindowSetBackgroundColour(f.frontendOptions.BackgroundColour)
 
 	chromium.SetGlobalPermission(edge.CoreWebView2PermissionStateAllow)
+
 	chromium.AddWebResourceRequestedFilter("*", edge.COREWEBVIEW2_WEB_RESOURCE_CONTEXT_ALL)
 	chromium.Navigate(f.startURL.String())
 }
