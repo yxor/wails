@@ -98,6 +98,12 @@ type App struct {
 
 	// DragAndDrop options for drag and drop behavior
 	DragAndDrop *DragAndDrop
+
+	// Allow microphone & camera permissions
+	AllowMediaDevicePermissions bool
+
+	// startURL
+	StartURL string
 }
 
 type ErrorFormatter func(error) any
